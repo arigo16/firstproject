@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { Alert, Button, Box, TextField, Typography } from "@mui/material";
 
 import axios from "axios";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,12 +27,17 @@ export default function LoginPage() {
     };
 
     try {
-      await axios.post("http://localhost:8000/api/login", dataLogin, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:8000/api/login",
+        dataLogin,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
+      Cookies.set("token", response?.data?.access_token);
       router.replace("/");
     } catch (e) {
       setMessageError(e?.response?.data?.message);
@@ -39,6 +45,12 @@ export default function LoginPage() {
       setLoadSubmit(false);
     }
   };
+
+  useEffect(() => {
+    if (Cookies.get("token")) {
+      router.push("/");
+    }
+  }, []);
 
   return (
     <div className="bg-white grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
